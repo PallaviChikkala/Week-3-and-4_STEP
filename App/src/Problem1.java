@@ -1,107 +1,135 @@
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Arrays;
 
-class Transaction {
+class Trade {
     String id;
-    double fee;
-    String timestamp; // simple string for demo, could be LocalTime
+    int volume;
 
-    public Transaction(String id, double fee, String timestamp) {
+    public Trade(String id, int volume) {
         this.id = id;
-        this.fee = fee;
-        this.timestamp = timestamp;
+        this.volume = volume;
     }
 
     @Override
     public String toString() {
-        return id + ": " + fee + "@" + timestamp;
+        return id + ":" + volume;
     }
 }
 
-public class Problem1 {
+public class Problem1{
 
-    // Bubble Sort (ascending by fee)
-    public static void bubbleSort(List<Transaction> transactions) {
-        int n = transactions.size();
-        boolean swapped;
-        int passes = 0, swaps = 0;
-
-        for (int i = 0; i < n - 1; i++) {
-            swapped = false;
-            passes++;
-            for (int j = 0; j < n - i - 1; j++) {
-                if (transactions.get(j).fee > transactions.get(j + 1).fee) {
-                    // swap
-                    Transaction temp = transactions.get(j);
-                    transactions.set(j, transactions.get(j + 1));
-                    transactions.set(j + 1, temp);
-                    swapped = true;
-                    swaps++;
-                }
-            }
-            if (!swapped) break; // early termination
+    // Merge Sort (ascending by volume)
+    public static void mergeSort(Trade[] trades, int left, int right) {
+        if (left < right) {
+            int mid = (left + right) / 2;
+            mergeSort(trades, left, mid);
+            mergeSort(trades, mid + 1, right);
+            merge(trades, left, mid, right);
         }
-        System.out.println("BubbleSort completed: " + passes + " passes, " + swaps + " swaps");
     }
 
-    // Insertion Sort (by fee, then timestamp for stability)
-    public static void insertionSort(List<Transaction> transactions) {
-        int n = transactions.size();
-        for (int i = 1; i < n; i++) {
-            Transaction key = transactions.get(i);
-            int j = i - 1;
-            while (j >= 0 && compare(transactions.get(j), key) > 0) {
-                transactions.set(j + 1, transactions.get(j));
-                j--;
-            }
-            transactions.set(j + 1, key);
-        }
-        System.out.println("InsertionSort completed.");
-    }
+    private static void merge(Trade[] trades, int left, int mid, int right) {
+        int n1 = mid - left + 1;
+        int n2 = right - mid;
 
-    // Comparison: fee first, then timestamp
-    private static int compare(Transaction t1, Transaction t2) {
-        if (t1.fee < t2.fee) return -1;
-        if (t1.fee > t2.fee) return 1;
-        return t1.timestamp.compareTo(t2.timestamp); // stable tie-breaker
-    }
+        Trade[] L = new Trade[n1];
+        Trade[] R = new Trade[n2];
 
-    // Outlier detection
-    public static void detectOutliers(List<Transaction> transactions) {
-        System.out.print("High-fee outliers: ");
-        boolean found = false;
-        for (Transaction t : transactions) {
-            if (t.fee > 50.0) {
-                System.out.print(t + " ");
-                found = true;
+        for (int i = 0; i < n1; i++) L[i] = trades[left + i];
+        for (int j = 0; j < n2; j++) R[j] = trades[mid + 1 + j];
+
+        int i = 0, j = 0, k = left;
+        while (i < n1 && j < n2) {
+            if (L[i].volume <= R[j].volume) {
+                trades[k++] = L[i++];
+            } else {
+                trades[k++] = R[j++];
             }
         }
-        if (!found) System.out.print("none");
-        System.out.println();
+        while (i < n1) trades[k++] = L[i++];
+        while (j < n2) trades[k++] = R[j++];
+    }
+
+    // Quick Sort (descending by volume)
+    public static void quickSort(Trade[] trades, int low, int high) {
+        if (low < high) {
+            int pi = partition(trades, low, high);
+            quickSort(trades, low, pi - 1);
+            quickSort(trades, pi + 1, high);
+        }
+    }
+
+    private static int partition(Trade[] trades, int low, int high) {
+        int pivot = trades[high].volume; // Lomuto partition
+        int i = low - 1;
+        for (int j = low; j < high; j++) {
+            if (trades[j].volume > pivot) { // DESC
+                i++;
+                Trade temp = trades[i];
+                trades[i] = trades[j];
+                trades[j] = temp;
+            }
+        }
+        Trade temp = trades[i + 1];
+        trades[i + 1] = trades[high];
+        trades[high] = temp;
+        return i + 1;
+    }
+
+    // Merge two sorted lists
+    public static Trade[] mergeLists(Trade[] morning, Trade[] afternoon) {
+        Trade[] merged = new Trade[morning.length + afternoon.length];
+        int i = 0, j = 0, k = 0;
+        while (i < morning.length && j < afternoon.length) {
+            if (morning[i].volume <= afternoon[j].volume) {
+                merged[k++] = morning[i++];
+            } else {
+                merged[k++] = afternoon[j++];
+            }
+        }
+        while (i < morning.length) merged[k++] = morning[i++];
+        while (j < afternoon.length) merged[k++] = afternoon[j++];
+        return merged;
+    }
+
+    // Compute total volume
+    public static int totalVolume(Trade[] trades) {
+        int sum = 0;
+        for (Trade t : trades) sum += t.volume;
+        return sum;
     }
 
     public static void main(String[] args) {
-        List<Transaction> transactions = new ArrayList<>();
-        transactions.add(new Transaction("id1", 10.5, "10:00"));
-        transactions.add(new Transaction("id2", 25.0, "09:30"));
-        transactions.add(new Transaction("id3", 5.0, "10:15"));
+        Trade[] trades = {
+                new Trade("trade3", 500),
+                new Trade("trade1", 100),
+                new Trade("trade2", 300)
+        };
 
-        System.out.println("Input transactions:");
-        for (Transaction t : transactions) {
-            System.out.println(t);
-        }
+        System.out.println("Input: " + Arrays.toString(trades));
 
-        // Bubble Sort demo
-        List<Transaction> bubbleList = new ArrayList<>(transactions);
-        bubbleSort(bubbleList);
-        System.out.println("BubbleSort (fees): " + bubbleList);
+        // Merge Sort demo
+        Trade[] mergeSorted = trades.clone();
+        mergeSort(mergeSorted, 0, mergeSorted.length - 1);
+        System.out.println("MergeSort (asc): " + Arrays.toString(mergeSorted));
 
-        // Insertion Sort demo
-        List<Transaction> insertionList = new ArrayList<>(transactions);
-        insertionSort(insertionList);
-        System.out.println("InsertionSort (fee+ts): " + insertionList);
+        // Quick Sort demo
+        Trade[] quickSorted = trades.clone();
+        quickSort(quickSorted, 0, quickSorted.length - 1);
+        System.out.println("QuickSort (desc): " + Arrays.toString(quickSorted));
 
-        // Outlier detection
-        detectOutliers(transactions);
+        // Merge two sorted lists (morning + afternoon)
+        Trade[] morning = {
+                new Trade("m1", 200),
+                new Trade("m2", 400)
+        };
+        Trade[] afternoon = {
+                new Trade("a1", 300),
+                new Trade("a2", 500)
+        };
+        mergeSort(morning, 0, morning.length - 1);
+        mergeSort(afternoon, 0, afternoon.length - 1);
+        Trade[] merged = mergeLists(morning, afternoon);
+        System.out.println("Merged morning+afternoon: " + Arrays.toString(merged));
+        System.out.println("Total volume: " + totalVolume(merged));
     }
 }
