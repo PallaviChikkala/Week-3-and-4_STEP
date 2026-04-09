@@ -2,80 +2,72 @@ import java.util.Arrays;
 
 public class Problem1 {
 
-    // Linear Search: find first and last occurrence
-    public static void linearSearch(String[] logs, String target) {
-        int first = -1, last = -1, comparisons = 0;
-        for (int i = 0; i < logs.length; i++) {
+    // Linear Search: find threshold in unsorted array
+    public static void linearSearch(int[] risks, int target) {
+        int comparisons = 0;
+        int foundIndex = -1;
+        for (int i = 0; i < risks.length; i++) {
             comparisons++;
-            if (logs[i].equals(target)) {
-                if (first == -1) first = i;
-                last = i;
+            if (risks[i] == target) {
+                foundIndex = i;
+                break;
             }
         }
-        System.out.println("Linear search for " + target + ":");
-        if (first != -1) {
-            System.out.println("First occurrence at index " + first);
-            System.out.println("Last occurrence at index " + last);
+        System.out.println("Linear search for threshold " + target + ":");
+        if (foundIndex != -1) {
+            System.out.println("Found at index " + foundIndex);
         } else {
             System.out.println("Not found");
         }
         System.out.println("Comparisons: " + comparisons);
     }
 
-    // Binary Search: find one occurrence, then expand to count duplicates
-    public static void binarySearch(String[] logs, String target) {
-        int low = 0, high = logs.length - 1;
+    // Binary Search variant: find floor and ceiling
+    public static void binaryFloorCeiling(int[] risks, int target) {
+        int low = 0, high = risks.length - 1;
         int comparisons = 0;
-        int foundIndex = -1;
+        int floor = Integer.MIN_VALUE;
+        int ceiling = Integer.MAX_VALUE;
 
         while (low <= high) {
             int mid = (low + high) / 2;
             comparisons++;
-            int cmp = logs[mid].compareTo(target);
-            if (cmp == 0) {
-                foundIndex = mid;
+            if (risks[mid] == target) {
+                floor = risks[mid];
+                ceiling = risks[mid];
                 break;
-            } else if (cmp < 0) {
+            } else if (risks[mid] < target) {
+                floor = risks[mid];
                 low = mid + 1;
             } else {
+                ceiling = risks[mid];
                 high = mid - 1;
             }
         }
 
-        System.out.println("Binary search for " + target + ":");
-        if (foundIndex != -1) {
-            // Count duplicates around foundIndex
-            int count = 1;
-            int left = foundIndex - 1;
-            while (left >= 0 && logs[left].equals(target)) {
-                count++;
-                left--;
-            }
-            int right = foundIndex + 1;
-            while (right < logs.length && logs[right].equals(target)) {
-                count++;
-                right++;
-            }
-            System.out.println("Found at index " + foundIndex);
-            System.out.println("Total occurrences: " + count);
+        System.out.println("Binary search for threshold " + target + ":");
+        if (floor != Integer.MIN_VALUE) {
+            System.out.println("Floor (largest ≤ target): " + floor);
         } else {
-            System.out.println("Not found");
+            System.out.println("Floor: none");
+        }
+        if (ceiling != Integer.MAX_VALUE) {
+            System.out.println("Ceiling (smallest ≥ target): " + ceiling);
+        } else {
+            System.out.println("Ceiling: none");
         }
         System.out.println("Comparisons: " + comparisons);
     }
 
     public static void main(String[] args) {
-        // Example transaction logs
-        String[] logs = {"accB", "accA", "accB", "accC"};
+        int[] risks = {10, 25, 50, 100};
+        Arrays.sort(risks); // ensure sorted for binary search
+        System.out.println("Sorted risks: " + Arrays.toString(risks));
 
-        // Sort logs for binary search
-        Arrays.sort(logs);
-        System.out.println("Sorted logs: " + Arrays.toString(logs));
+        // Linear search demo (unsorted threshold match)
+        linearSearch(risks, 30);
 
-        // Linear search demo
-        linearSearch(logs, "accB");
-
-        // Binary search demo
-        binarySearch(logs, "accB");
+        // Binary search demo (floor and ceiling)
+        binaryFloorCeiling(risks, 30);
     }
 }
