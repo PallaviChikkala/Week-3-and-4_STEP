@@ -131,5 +131,7 @@ public class Problem1{
         Trade[] merged = mergeLists(morning, afternoon);
         System.out.println("Merged morning+afternoon: " + Arrays.toString(merged));
         System.out.println("Total volume: " + totalVolume(merged));
+
+
     }
 }
